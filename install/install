@@ -1,0 +1,9 @@
+#!/bin/bash
+
+DIR="$( cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd )"
+
+sudo mv $DIR/install/service.sh /etc/init/print-db
+sudo ln -s $DIR/src/print-db /usr/bin/print-db
+sudo chmod +x /usr/bin/print-db
+sudo chmod +x /etc/init/print-db
+sudo nano /etc/init/print-db

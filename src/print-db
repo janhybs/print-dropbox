@@ -1,0 +1,50 @@
+#!/usr/bin/python3
+
+import time
+import argparse
+import sys
+import os
+import subprocess as sp
+
+parser = argparse.ArgumentParser(description='Print files in dropbox folder')
+parser.add_argument('--dir', help='Directory which will be monitored')
+
+
+args = parser.parse_args()
+if args.dir is None:
+    print('Specify dir using --dir options')
+    exit(1)
+
+
+watching = os.path.abspath(args.dir)
+finished = os.path.join(watching, 'finished')
+failed = os.path.join(watching, 'failed')
+
+os.makedirs(finished, exist_ok=True)
+os.makedirs(failed, exist_ok=True)
+
+print('Monitoring folder {watching} dir'.format(**locals()))
+print('Finished jobs in  {finished}'.format(**locals()))
+print('='*80)
+
+
+while True:
+    pdfs = [os.path.join(watching, pdf) for pdf in os.listdir(watching) if pdf.endswith('.pdf')]
+
+    print('Found following pdfs:')
+    print('\n'.join(pdfs))
+    print('')
+
+    for pdf in pdfs:
+        e = sp.Popen(['lpr', pdf]).wait()
+        if e != 0:
+            print('lpr failed with code (%d)' % e)
+            print('Moving pdf to fail folder')
+            e = sp.Popen(['mv', pdf, failed]).wait()
+            print('mv (%d)' % e)
+        else:
+            print('lpr (%d)' % e)
+            time.sleep(2)
+            e = sp.Popen(['mv', pdf, finished]).wait()
+            print('mv (%d)' % e)
+    time.sleep(5)
